@@ -3,7 +3,6 @@ package com.adrian.proyecto_invidentes.voz;
 import android.app.Activity;
 import android.content.Intent;
 import android.speech.RecognizerIntent;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -32,13 +31,11 @@ public class recibir_voz {
         ArrayList<String> matches = null;
 
         if (resultCode == RESULT_OK && data != null) {
-            if(requestCode==id) {
+            if (requestCode == id) {
                 matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
 
             }
 
-        } else {
-            Log.i("test", "Intentelo nuevamente");
         }
 
         return matches;

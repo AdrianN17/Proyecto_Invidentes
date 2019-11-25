@@ -1,14 +1,15 @@
 package com.adrian.proyecto_invidentes.voz;
 
 import android.app.Activity;
+import android.os.Build;
+import android.os.Handler;
 import android.speech.tts.TextToSpeech;
-import android.view.View;
 
 import java.util.Locale;
 
 public class emitir_voz {
 
-    TextToSpeech repeatTTS;
+    public TextToSpeech repeatTTS;
 
     public emitir_voz(Activity view,final Locale idioma)
     {
@@ -26,10 +27,18 @@ public class emitir_voz {
 
     public void hablar(String text ) {
         if (text.length() == 0) {
-            repeatTTS.speak("Error", TextToSpeech.QUEUE_FLUSH, null);
+            modulo_hablar("Error");
+        } else {
+            modulo_hablar(text);
+        }
+    }
+
+    private void modulo_hablar(String text)
+    {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            repeatTTS.speak(text,TextToSpeech.QUEUE_FLUSH,null,null);
         } else {
             repeatTTS.speak(text, TextToSpeech.QUEUE_FLUSH, null);
-
         }
     }
 

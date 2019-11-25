@@ -6,12 +6,14 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.content.Context;
 import android.content.Intent;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Timer;
@@ -21,8 +23,8 @@ import com.adrian.proyecto_invidentes.bluetooth.bluetooth_conexion;
 import com.adrian.proyecto_invidentes.voz.emitir_voz;
 import com.adrian.proyecto_invidentes.voz.recibir_voz;
 
-public class MainActivity extends AppCompatActivity
-{
+
+public class MainActivity extends AppCompatActivity  {
     public static final Locale spanish = new Locale("es", "ES");
     private bluetooth_conexion btn_con;
 
@@ -37,13 +39,15 @@ public class MainActivity extends AppCompatActivity
     private Handler handler = new Handler();
 
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        btn_con = new bluetooth_conexion("HC-05",this);
-        em = new emitir_voz(this,spanish);
+        btn_con = new bluetooth_conexion("HC-05", this);
+        em = new emitir_voz(this, spanish);
         re = new recibir_voz();
 
         ConstraintLayout vista = findViewById(R.id.vista);
@@ -60,10 +64,9 @@ public class MainActivity extends AppCompatActivity
                     handler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            re.invocar(MainActivity.this,id_recibir_1,spanish);
+                            re.invocar(MainActivity.this, id_recibir_1, spanish);
                         }
                     }, 1200);
-
 
 
                     // do your work here
@@ -76,24 +79,23 @@ public class MainActivity extends AppCompatActivity
 
 
         });
+
+
     }
 
 
     @Override
-    public void onDestroy(){
+    public void onDestroy() {
         em.onDestroy();
         stopTimer();
 
 
         try {
-            if(btn_con.status())
-            {
+            if (btn_con.status()) {
                 btn_con.desconectar();
             }
-        }
-        catch (Exception ex)
-        {
-            Log.i("test","Error al desconectar");
+        } catch (Exception ex) {
+            Log.i("test", "Error al desconectar");
         }
 
 
@@ -103,121 +105,120 @@ public class MainActivity extends AppCompatActivity
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        ArrayList<String> matches = re.resultados(requestCode,resultCode,data,id_recibir_1);
+        ArrayList<String> matches = re.resultados(requestCode, resultCode, data, id_recibir_1);
 
-        if(matches!=null && !matches.isEmpty())
-        {
+        if (matches != null && !matches.isEmpty()) {
             for (String data_text : matches) {
                 Log.i("test", data_text.toLowerCase());
-                if(acciones(data_text.toLowerCase()))
-                {
+                if (acciones(data_text.toLowerCase())) {
                     break;
                 }
             }
-        }
-        else
-        {
+        } else {
             em.hablar("Intente Nuevamente");
         }
     }
 
-    public boolean acciones(String data)
-    {
-        boolean es_correcto=false;
-        switch(data)
-        {
-            case "conectar":
+    public boolean acciones(String data) {
+        boolean es_correcto = false;
+
+        Log.i("test", data);
+
+        switch (data) {
+            case "conectar": {
                 encender();
-                es_correcto=true;
+                es_correcto = true;
                 break;
-            case "desconectar":
+            }
+            case "desconectar": {
                 apagar();
-                es_correcto=true;
+                es_correcto = true;
                 break;
-            case "ayuda":
-                String ayuda="Comandos conectar , desconectar";
+            }
+            case "ayuda": {
+                String ayuda = "Comandos conectar , desconectar, ubicar";
                 em.hablar(ayuda);
                 break;
-            default :
+            }
+            case "ubicar": {
+
+
+                    //GPS();
+
+
+                break;
+
+            }
+            default: {
                 em.hablar("Orden incorrecta");
                 break;
+            }
         }
 
         return es_correcto;
     }
 
-    public void encender()
-    {
+    public void encender() {
         btn_con.iniciar();
         btn_con.buscar_host("HC-05");
 
         try {
             btn_con.conectar();
             em.hablar("Conectado");
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             em.hablar("Error al conectar");
         }
     }
 
-    public void apagar()
-    {
+    public void apagar() {
         try {
             btn_con.desconectar();
             em.hablar("Desconectado");
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             em.hablar("Error al desconectar");
         }
     }
 
 
-
     //To stop timer
-    private void stopTimer(){
-        if(timer != null){
+    private void stopTimer() {
+        if (timer != null) {
             timer.cancel();
             timer.purge();
         }
     }
 
     //To start timer
-    private void startTimer(){
+    private void startTimer() {
         timer = new Timer();
         timerTask = new TimerTask() {
             public void run() {
                 handler.post(new Runnable() {
-                    public void run(){
+                    public void run() {
 
 
-                        if(btn_con.status())
-                        {
+                        if (btn_con.status()) {
                             String data_string = btn_con.get_data();
-                            if(data_string != null && !data_string.isEmpty())
-                            {
+                            if (data_string != null && !data_string.isEmpty()) {
 
                                 data_string = data_string.replaceAll("[^0-9]+", "");
                                 data_string = data_string.trim();
 
-                                //Log.i("test", data_string.length()+"");
-
-                                try
-                                {
+                                try {
                                     int data = Integer.parseInt(data_string);
 
-                                    if(data<30)
-                                    {
+                                    if (data < 30) {
                                         Vibrator vib = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
                                         vib.vibrate(400);
+
+                                        if (!em.repeatTTS.isSpeaking()) {
+                                            em.hablar("Objeto colisionable");
+                                        }
                                     }
 
-                                    Log.i("test",data+"");
-                                }
-                                catch(Exception ex)
-                                {
-                                    Log.i("test","Error int");
+                                    Log.i("test", data + "");
+                                } catch (Exception ex) {
+                                    Log.i("test", "Error int");
                                 }
 
                             }
