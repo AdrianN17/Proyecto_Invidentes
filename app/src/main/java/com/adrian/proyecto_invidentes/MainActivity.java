@@ -1,31 +1,55 @@
 package com.adrian.proyecto_invidentes;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.Manifest;
+import android.accounts.Account;
+import android.accounts.AccountManager;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 
+import android.database.AbstractCursor;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
+import android.provider.ContactsContract;
+import android.telephony.SmsManager;
+import android.telephony.TelephonyManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.adrian.proyecto_invidentes.bluetooth.bluetooth_conexion;
 import com.adrian.proyecto_invidentes.voz.emitir_voz;
 import com.adrian.proyecto_invidentes.voz.recibir_voz;
 
+import pub.devrel.easypermissions.AfterPermissionGranted;
+import pub.devrel.easypermissions.EasyPermissions;
 
-public class MainActivity extends AppCompatActivity  {
+
+public class MainActivity extends AppCompatActivity {
+
+
     public static final Locale spanish = new Locale("es", "ES");
+
     private bluetooth_conexion btn_con;
 
     private recibir_voz re;
@@ -38,7 +62,7 @@ public class MainActivity extends AppCompatActivity  {
     private TimerTask timerTask;
     private Handler handler = new Handler();
 
-
+    private String numero_celular = "";
 
 
     @Override
@@ -108,12 +132,27 @@ public class MainActivity extends AppCompatActivity  {
         ArrayList<String> matches = re.resultados(requestCode, resultCode, data, id_recibir_1);
 
         if (matches != null && !matches.isEmpty()) {
+
+            Boolean valor=false;
+
             for (String data_text : matches) {
                 Log.i("test", data_text.toLowerCase());
-                if (acciones(data_text.toLowerCase())) {
+
+                valor = acciones(data_text.toLowerCase());
+
+                if(valor)
+                {
                     break;
                 }
+
+
             }
+
+            if(!valor)
+            {
+                em.hablar("Orden incorrecta");
+            }
+
         } else {
             em.hablar("Intente Nuevamente");
         }
@@ -136,26 +175,63 @@ public class MainActivity extends AppCompatActivity  {
                 break;
             }
             case "ayuda": {
-                String ayuda = "Comandos conectar , desconectar, ubicar";
+                String ayuda = "Comandos conectar , desconectar, ubicar, enviar ubicacion";
                 em.hablar(ayuda);
+                es_correcto = true;
                 break;
             }
-            case "ubicar": {
+            case "enviar ubicacion": {
+
+                if(TextUtils.isEmpty(numero_celular))
+                {
+                    em.hablar("Telefono no ingresado");
+                }
+                else
+                {
+                    sendLongSMS(numero_celular,"Te envio mi ubicacion, he tenido un problema : https://www.google.com/maps/search/40.7127837,-74.0059413");
+                    em.hablar("Ubicacion Enviada al " + numero_celular);
+                }
 
 
-                    //GPS();
 
-
+                es_correcto = true;
                 break;
+
 
             }
             default: {
-                em.hablar("Orden incorrecta");
+
+                String celular = data.replaceAll("\\s","");
+                Log.i("cell",celular);
+
+
+                if(isValid(celular))
+                {
+                    em.hablar("Numero Correcto y Guardado");
+                    numero_celular = celular;
+
+                    es_correcto = true;
+                }
+
+
                 break;
             }
         }
 
         return es_correcto;
+    }
+
+
+    public static boolean isValid(String s)
+    {
+
+
+        if (s.matches("^(?=(?:[8-9]){1})(?=[0-9]{8}).*")) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
     public void encender() {
@@ -216,9 +292,10 @@ public class MainActivity extends AppCompatActivity  {
                                         }
                                     }
 
-                                    Log.i("test", data + "");
+                                    //Log.i("test", data + "");
                                 } catch (Exception ex) {
-                                    Log.i("test", "Error int");
+
+                                    //Log.i("test", "Error int");
                                 }
 
                             }
@@ -229,6 +306,20 @@ public class MainActivity extends AppCompatActivity  {
             }
         };
         timer.schedule(timerTask, 500, 500);
+    }
+
+
+    public void sendLongSMS(String phoneNo, String msg) {
+        try {
+            SmsManager smsManager = SmsManager.getDefault();
+            smsManager.sendTextMessage(phoneNo, null, msg, null, null);
+            /*Toast.makeText(getApplicationContext(), "Message Sent",
+                    Toast.LENGTH_LONG).show();*/
+        } catch (Exception ex) {
+            /*Toast.makeText(getApplicationContext(),ex.getMessage().toString(),
+                    Toast.LENGTH_LONG).show();*/
+            ex.printStackTrace();
+        }
     }
 
 }
