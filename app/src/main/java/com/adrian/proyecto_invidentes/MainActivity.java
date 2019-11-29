@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
     public float latitud = 0;
     public float longitud = 0;
+    public float max_distancia = 30;
 
 
 
@@ -163,6 +164,13 @@ public class MainActivity extends AppCompatActivity {
                 es_correcto = true;
                 break;
             }
+            case "mi distancia":
+            {
+                em.hablar("mi distancia es de " + max_distancia + " centimetros");
+                es_correcto = true;
+                break;
+            }
+
             case "enviar ubicacion": {
 
                 if(TextUtils.isEmpty(numero_celular))
@@ -186,17 +194,8 @@ public class MainActivity extends AppCompatActivity {
             }
             default: {
 
-                String celular = data.replaceAll("\\s","");
-                Log.i("cell",celular);
 
-
-                if(isValid(celular))
-                {
-                    em.hablar("Numero Correcto y Guardado");
-                    numero_celular = celular;
-
-                    es_correcto = true;
-                }
+                es_correcto = comandos_con_datos(data);
 
 
                 break;
@@ -204,6 +203,49 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return es_correcto;
+    }
+
+    public boolean comandos_con_datos(String data)
+    {
+        if(data.contains("distancia "))
+        {
+            String data_procesada = data.replaceAll("distancia ", "");
+            data_procesada = data_procesada.trim();
+
+            try
+            {
+                max_distancia = Float.parseFloat(data_procesada);
+                em.hablar("Distancia actualizada");
+
+                return true;
+            }
+            catch(Exception ex)
+            {
+                ex.printStackTrace();
+            }
+        }
+        else if(data.contains("contacto "))
+        {
+            String data_procesada = data.replaceAll("contacto ", "");
+            data_procesada = data_procesada.trim();
+
+            Log.i("cell",data_procesada);
+
+            if(isValid(data_procesada))
+            {
+                em.hablar("Numero Correcto y Guardado");
+                numero_celular = data_procesada;
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+
+        return false;
     }
 
 
@@ -306,7 +348,7 @@ public class MainActivity extends AppCompatActivity {
             longitud = Float.parseFloat(parts[2]);
 
 
-            if (distancia < 30) {
+            if (distancia < max_distancia) {
                 Vibrator vib = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
                 vib.vibrate(400);
 
