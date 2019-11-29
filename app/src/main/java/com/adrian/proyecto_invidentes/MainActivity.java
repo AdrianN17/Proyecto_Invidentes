@@ -41,7 +41,8 @@ public class MainActivity extends AppCompatActivity {
     private TimerTask timerTask;
     private Handler handler = new Handler();
 
-    private String numero_celular = "";
+    private String mi_numero_emergencia = "";
+    private String mi_numero_celular = "";
 
     public float latitud = 0;
     public float longitud = 0;
@@ -128,8 +129,6 @@ public class MainActivity extends AppCompatActivity {
                 {
                     break;
                 }
-
-
             }
 
             if(!valor)
@@ -170,10 +169,40 @@ public class MainActivity extends AppCompatActivity {
                 es_correcto = true;
                 break;
             }
+            case "mi teléfono personal":
+            {
+                if(!mi_numero_celular.equals(""))
+                {
+                    em.hablar("Mi telefono es " + mi_numero_celular);
+                }
+                else
+                {
+                    em.hablar("telefono personal vacio");
+                }
 
-            case "enviar ubicacion": {
 
-                if(TextUtils.isEmpty(numero_celular))
+                es_correcto = true;
+                break;
+            }
+            case "mi teléfono de emergencia":
+            {
+                if(!mi_numero_emergencia.equals(""))
+                {
+                    em.hablar("mi telefono de emergencia es " + mi_numero_emergencia);
+                }
+                else
+                {
+                    em.hablar("telefono de emergencia vacio");
+                }
+
+                es_correcto = true;
+
+                break;
+            }
+            case "enviar ubicacion":
+            {
+
+                if(TextUtils.isEmpty(mi_numero_emergencia))
                 {
                     em.hablar("Telefono no ingresado");
                 }
@@ -181,15 +210,12 @@ public class MainActivity extends AppCompatActivity {
                 {
                     String cadena =  String.format("Te envio mi ubicacion, he tenido un problema : https://www.google.com/maps/search/%f,%f",latitud,longitud);
 
-                    sendLongSMS(numero_celular,cadena);
-                    em.hablar("Ubicacion Enviada al " + numero_celular);
+                    sendLongSMS(mi_numero_emergencia,cadena);
+                    em.hablar("Ubicacion Enviada al " + mi_numero_emergencia);
                 }
-
-
 
                 es_correcto = true;
                 break;
-
 
             }
             default: {
@@ -215,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
             try
             {
                 max_distancia = Float.parseFloat(data_procesada);
-                em.hablar("Distancia actualizada");
+                em.hablar("distancia actualizada");
 
                 return true;
             }
@@ -224,35 +250,52 @@ public class MainActivity extends AppCompatActivity {
                 ex.printStackTrace();
             }
         }
-        else if(data.contains("contacto "))
+        else if(data.contains("teléfono de emergencia "))
         {
-            String data_procesada = data.replaceAll("contacto ", "");
+            String data_procesada = data.replaceAll("teléfono de emergencia ", "");
             data_procesada = data_procesada.trim();
 
-            Log.i("cell",data_procesada);
+            Log.i("validado",data_procesada);
 
             if(isValid(data_procesada))
             {
                 em.hablar("Numero Correcto y Guardado");
-                numero_celular = data_procesada;
+                mi_numero_emergencia = data_procesada;
 
                 return true;
             }
             else
             {
+                Log.i("validado","data no guardada");
                 return false;
             }
         }
+        else if(data.contains("teléfono personal "))
+        {
+            String data_procesada = data.replaceAll("teléfono personal ", "");
+            data_procesada = data_procesada.trim();
 
+            Log.i("validado",data_procesada);
 
+            if(isValid(data_procesada))
+            {
+                em.hablar("Numero Correcto y Guardado");
+                mi_numero_celular = data_procesada;
+
+                return true;
+            }
+            else
+            {
+                Log.i("validado","data no guardada");
+                return false;
+            }
+        }
         return false;
     }
 
 
     public static boolean isValid(String s)
     {
-
-
         if (s.matches("^(?=(?:[8-9]){1})(?=[0-9]{8}).*")) {
             return true;
         }
@@ -318,7 +361,6 @@ public class MainActivity extends AppCompatActivity {
         timer.schedule(timerTask, 500, 500);
     }
 
-
     public void sendLongSMS(String phoneNo, String msg) {
         try {
             SmsManager smsManager = SmsManager.getDefault();
@@ -361,5 +403,4 @@ public class MainActivity extends AppCompatActivity {
             ex.printStackTrace();
         }
     }
-
 }

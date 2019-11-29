@@ -4,7 +4,6 @@ import android.content.Context;
 import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-
 import com.adrian.proyecto_invidentes.sqlite_conexion.conexion;
 import com.adrian.proyecto_invidentes.sqlite_modelo.configuracion;
 
@@ -16,10 +15,6 @@ public class controlador_sqlite extends SQLiteOpenHelper {
 
     public controlador_sqlite(Context context, String name, SQLiteDatabase.CursorFactory factory, int version, DatabaseErrorHandler errorHandler) {
         super(context, name, factory, version, errorHandler);
-    }
-
-    public controlador_sqlite(Context context, String name, int version, SQLiteDatabase.OpenParams openParams) {
-        super(context, name, version, openParams);
     }
 
     public boolean actualizar_mi_telefono()
