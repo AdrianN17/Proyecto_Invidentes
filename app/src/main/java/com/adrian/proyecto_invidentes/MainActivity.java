@@ -1,48 +1,27 @@
 package com.adrian.proyecto_invidentes;
 
-import androidx.annotation.NonNull;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
-import android.Manifest;
-import android.accounts.Account;
-import android.accounts.AccountManager;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-
-import android.database.AbstractCursor;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
-import android.provider.ContactsContract;
 import android.telephony.SmsManager;
-import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Toast;
-
-import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import com.adrian.proyecto_invidentes.bluetooth.bluetooth_conexion;
 import com.adrian.proyecto_invidentes.voz.emitir_voz;
 import com.adrian.proyecto_invidentes.voz.recibir_voz;
 
-import pub.devrel.easypermissions.AfterPermissionGranted;
-import pub.devrel.easypermissions.EasyPermissions;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -63,6 +42,10 @@ public class MainActivity extends AppCompatActivity {
     private Handler handler = new Handler();
 
     private String numero_celular = "";
+
+    public float latitud = 0;
+    public float longitud = 0;
+
 
 
     @Override
@@ -188,7 +171,9 @@ public class MainActivity extends AppCompatActivity {
                 }
                 else
                 {
-                    sendLongSMS(numero_celular,"Te envio mi ubicacion, he tenido un problema : https://www.google.com/maps/search/40.7127837,-74.0059413");
+                    String cadena =  String.format("Te envio mi ubicacion, he tenido un problema : https://www.google.com/maps/search/%f,%f",latitud,longitud);
+
+                    sendLongSMS(numero_celular,cadena);
                     em.hablar("Ubicacion Enviada al " + numero_celular);
                 }
 
@@ -275,28 +260,11 @@ public class MainActivity extends AppCompatActivity {
 
                         if (btn_con.status()) {
                             String data_string = btn_con.get_data();
+
+
                             if (data_string != null && !data_string.isEmpty()) {
 
-                                data_string = data_string.replaceAll("[^0-9]+", "");
-                                data_string = data_string.trim();
-
-                                try {
-                                    int data = Integer.parseInt(data_string);
-
-                                    if (data < 30) {
-                                        Vibrator vib = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-                                        vib.vibrate(400);
-
-                                        if (!em.repeatTTS.isSpeaking()) {
-                                            em.hablar("Objeto colisionable");
-                                        }
-                                    }
-
-                                    //Log.i("test", data + "");
-                                } catch (Exception ex) {
-
-                                    //Log.i("test", "Error int");
-                                }
+                                procesar_data(data_string);
 
                             }
                         }
@@ -318,6 +286,36 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception ex) {
             /*Toast.makeText(getApplicationContext(),ex.getMessage().toString(),
                     Toast.LENGTH_LONG).show();*/
+            ex.printStackTrace();
+        }
+    }
+
+    public void procesar_data(String data_recibida)
+    {
+
+        Log.i("texto recibido", data_recibida);
+
+        String data_nueva =  data_recibida.trim();
+
+        String[] parts = data_nueva.split("_");
+
+        try {
+
+            float distancia = Float.parseFloat(parts[0]);
+            latitud = Float.parseFloat(parts[1]);
+            longitud = Float.parseFloat(parts[2]);
+
+
+            if (distancia < 30) {
+                Vibrator vib = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+                vib.vibrate(400);
+
+                if (!em.repeatTTS.isSpeaking()) {
+                    em.hablar("Objeto colisionable");
+                }
+            }
+
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
