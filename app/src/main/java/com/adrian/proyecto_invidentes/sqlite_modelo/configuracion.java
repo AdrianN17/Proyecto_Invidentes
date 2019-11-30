@@ -5,8 +5,10 @@ public class configuracion {
     Float mi_distancia;
     String mi_contacto;
 
-    public configuracion() {
-
+    public configuracion(String mi_telefono, Float mi_distancia, String mi_contacto) {
+        this.mi_telefono = mi_telefono;
+        this.mi_distancia = mi_distancia;
+        this.mi_contacto = mi_contacto;
     }
 
     public String getMi_telefono() {

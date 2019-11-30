@@ -19,6 +19,8 @@ import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 import com.adrian.proyecto_invidentes.bluetooth.bluetooth_conexion;
+import com.adrian.proyecto_invidentes.sqlite_controlador.controlador_sqlite;
+import com.adrian.proyecto_invidentes.sqlite_modelo.configuracion;
 import com.adrian.proyecto_invidentes.voz.emitir_voz;
 import com.adrian.proyecto_invidentes.voz.recibir_voz;
 
@@ -48,12 +50,15 @@ public class MainActivity extends AppCompatActivity {
     public float longitud = 0;
     public float max_distancia = 30;
 
+    public controlador_sqlite controlador ;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
 
         btn_con = new bluetooth_conexion("HC-05", this);
         em = new emitir_voz(this, spanish);
@@ -89,7 +94,8 @@ public class MainActivity extends AppCompatActivity {
 
         });
 
-
+        controlador = new controlador_sqlite(MainActivity.this);
+        jalar_data();
     }
 
 
@@ -237,6 +243,7 @@ public class MainActivity extends AppCompatActivity {
         {
             String data_procesada = data.replaceAll("distancia ", "");
             data_procesada = data_procesada.trim();
+            data_procesada = data_procesada.replaceAll("\\s","");
 
             try
             {
@@ -254,8 +261,10 @@ public class MainActivity extends AppCompatActivity {
         {
             String data_procesada = data.replaceAll("teléfono de emergencia ", "");
             data_procesada = data_procesada.trim();
+            data_procesada = data_procesada.replaceAll("\\s","");
 
             Log.i("validado",data_procesada);
+
 
             if(isValid(data_procesada))
             {
@@ -274,6 +283,7 @@ public class MainActivity extends AppCompatActivity {
         {
             String data_procesada = data.replaceAll("teléfono personal ", "");
             data_procesada = data_procesada.trim();
+            data_procesada = data_procesada.replaceAll("\\s","");
 
             Log.i("validado",data_procesada);
 
@@ -402,5 +412,14 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    public void jalar_data()
+    {
+        configuracion conf  = controlador.getData();
+
+        mi_numero_celular = conf.getMi_telefono();
+        mi_numero_emergencia = conf.getMi_contacto();
+        max_distancia = conf.getMi_distancia();
     }
 }
