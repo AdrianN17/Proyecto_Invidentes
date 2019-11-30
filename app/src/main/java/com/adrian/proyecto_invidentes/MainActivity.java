@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
 
     public float latitud = 0;
     public float longitud = 0;
-    public float max_distancia = 30;
+    public float max_distancia = 0;
 
     public controlador_sqlite controlador ;
 
@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
+        controlador = new controlador_sqlite(MainActivity.this);
 
         btn_con = new bluetooth_conexion("HC-05", this);
         em = new emitir_voz(this, spanish);
@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
 
         });
 
-        controlador = new controlador_sqlite(MainActivity.this);
+
         jalar_data();
     }
 
@@ -248,7 +248,9 @@ public class MainActivity extends AppCompatActivity {
             try
             {
                 max_distancia = Float.parseFloat(data_procesada);
+                controlador.actualizar_mi_distancia(max_distancia);
                 em.hablar("distancia actualizada");
+
 
                 return true;
             }
@@ -268,9 +270,10 @@ public class MainActivity extends AppCompatActivity {
 
             if(isValid(data_procesada))
             {
-                em.hablar("Numero Correcto y Guardado");
-                mi_numero_emergencia = data_procesada;
 
+                mi_numero_emergencia = data_procesada;
+                controlador.actualizar_mi_contacto(mi_numero_emergencia);
+                em.hablar("Numero Correcto y Guardado");
                 return true;
             }
             else
@@ -289,8 +292,10 @@ public class MainActivity extends AppCompatActivity {
 
             if(isValid(data_procesada))
             {
-                em.hablar("Numero Correcto y Guardado");
+
                 mi_numero_celular = data_procesada;
+                controlador.actualizar_mi_telefono(mi_numero_celular);
+                em.hablar("Numero Correcto y Guardado");
 
                 return true;
             }

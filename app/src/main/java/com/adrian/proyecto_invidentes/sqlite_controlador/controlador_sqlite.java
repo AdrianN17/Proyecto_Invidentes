@@ -11,15 +11,14 @@ import com.adrian.proyecto_invidentes.sqlite_modelo.configuracion;
 
 public class controlador_sqlite extends SQLiteOpenHelper {
 
-    public static final String DATABASE_NAME = "configuraciones.db";
+    public static final String DATABASE_NAME = "configuracion";
 
 
 
     public controlador_sqlite(Context context) {
 
-        super(context, DATABASE_NAME , null, 8);
+        super(context, DATABASE_NAME , null, 17);
 
-        Log.i("creacion","objeto ");
     }
 
     @Override
@@ -27,12 +26,12 @@ public class controlador_sqlite extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE IF NOT EXISTS datos\n" +
                 "(\n" +
                 "    mi_telefono varchar(9),\n" +
-                "    mi_distancia int,\n" +
+                "    mi_distancia double,\n" +
                 "    mi_contacto varchar(9)\n" +
                 ");\n" +
                 "\n");
 
-        db.execSQL("insert into datos values('',30,'')");
+        db.execSQL("INSERT INTO datos VALUES('',30,'')");
 
 
 
@@ -46,6 +45,7 @@ public class controlador_sqlite extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS datos");
         onCreate(db);
+        Log.i("creacion","objeto creado 2");
     }
 
 
@@ -61,7 +61,7 @@ public class controlador_sqlite extends SQLiteOpenHelper {
         return true;
     }
 
-    public boolean actualizar_mi_distancia(String mi_distancia)
+    public boolean actualizar_mi_distancia(float mi_distancia)
     {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
@@ -92,16 +92,23 @@ public class controlador_sqlite extends SQLiteOpenHelper {
 
     public configuracion getData() {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor res =  db.rawQuery( "select * from datos", null );
+        String[] columnas = {"mi_telefono","mi_distancia","mi_contacto"};
+
+        configuracion conf = null;
+
+        Cursor res = db.query("datos", columnas, null,
+                null, null, null, null);
+        while (res.moveToNext()) {
+            String mi_telefono = res.getString(0);
+            float mi_distancia = res.getFloat(1);
+            String mi_contacto = res.getString(2);
 
 
-        String mi_telefono = res.getString(0);
-        float mi_distancia = res.getFloat(1);
-        String mi_contacto = res.getString(2);
 
-        Log.i("midatos",mi_telefono);
+            conf = new configuracion(mi_telefono,mi_distancia,mi_contacto);
+        }
 
-        configuracion conf = new configuracion(mi_telefono,mi_distancia,mi_contacto);
+        Log.i("hecho",conf.getMi_contacto());
 
         return conf;
     }
